@@ -4,21 +4,21 @@ import java.lang.ref.WeakReference
 
 class WeekDi {
 
-    private val linksList = mutableSetOf<WeakReference<*>>()
+    private val linksList = mutableMapOf<String, WeakReference<*>>()
 
-    private inline fun <reified T : Any> getInstance(): T? {
-        val weakLink = linksList.firstOrNull { it.get() is T }
+    private inline fun <reified T : Any> getInstance(clazz: Class<T>): T? {
+        val weakLink = linksList[clazz.name]
         val value = weakLink?.get()
         return value as? T
     }
 
     internal inline fun <reified T : Any> getInstanceOrCreate(clazz: Class<T>): T {
-        val instance = getInstance<T>()
+        val instance = getInstance(clazz)
         if (instance != null) {
             return instance
         }
         val newInstance = createInstance(clazz)
-        linksList.add(WeakReference(newInstance))
+        linksList[clazz.name] = WeakReference(newInstance)
 
         return newInstance as T
     }
